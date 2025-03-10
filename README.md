@@ -2,4 +2,4 @@
 
 Fix:
 
-- issue with looping sound
+- [X] issue with looping sound

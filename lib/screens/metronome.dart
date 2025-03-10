@@ -16,15 +16,18 @@ class _MetronomeState extends State<Metronome> {
   bool isPlaying = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
   final AssetSource _tickSound = AssetSource('sounds/test-sound.mp3');
-  
+
   @override
   void initState() {
     super.initState();
     // Set up audio player with lower latency settings
     _audioPlayer.setReleaseMode(ReleaseMode.stop); // Stop after each play
+    // *Preload the sound file
+    _audioPlayer.setSource(_tickSound);
   }
 
   @override
+  // Clean up resources when the widget is destroyed.
   void dispose() {
     metronomeTimer?.cancel();
     _audioPlayer.dispose();
@@ -35,8 +38,7 @@ class _MetronomeState extends State<Metronome> {
     if (isPlaying) {
       metronomeTimer?.cancel();
     } else {
-      // Start a new timer with the current BPM
-      _startMetronomeTimer();
+      _startMetronomeTimer(); // Start a new timer with the current BPM
     }
     setState(() {
       isPlaying = !isPlaying;
@@ -47,30 +49,26 @@ class _MetronomeState extends State<Metronome> {
   void _startMetronomeTimer() {
     // Cancel any existing timer first
     metronomeTimer?.cancel();
-    
+
     // Calculate interval in milliseconds based on BPM
     int interval = (60000 / bpm).round();
-    
+
     if (kDebugMode) {
       print('Starting metronome at $bpm BPM (interval: $interval ms)');
     }
-    
-    metronomeTimer = Timer.periodic(
-      Duration(milliseconds: interval),
-      (timer) {
-        _playTick();
-        if (kDebugMode) {
-          print('Tick at BPM: $bpm');
-        }
-      },
-    );
+
+    metronomeTimer = Timer.periodic(Duration(milliseconds: interval), (timer) {
+      _playTick();
+      if (kDebugMode) {
+        print('Tick at BPM: $bpm');
+      }
+    });
   }
 
   void changeBPM(int change) {
     setState(() {
-      // Update BPM value with limits
-      bpm = (bpm + change).clamp(40, 240);
-      
+      bpm = (bpm + change).clamp(40, 240); // Update BPM value with limits
+
       // If currently playing, restart the timer with new BPM
       if (isPlaying) {
         _startMetronomeTimer();
@@ -81,10 +79,8 @@ class _MetronomeState extends State<Metronome> {
   // Play the tick sound with improved handling
   void _playTick() async {
     try {
-      // Stop any currently playing sound before starting a new one
-      await _audioPlayer.stop();
-      // Play the tick sound
-      await _audioPlayer.play(_tickSound);
+      await _audioPlayer.stop(); // Stop any currently playing sound before starting a new one
+      await _audioPlayer.play(_tickSound); // Play the tick sound
     } catch (e) {
       if (kDebugMode) {
         print('Error playing tick sound: $e');
@@ -101,7 +97,10 @@ class _MetronomeState extends State<Metronome> {
         children: [
           Text('Bpm'),
           SizedBox(height: 10.0),
-          Text('$bpm', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text(
+            '$bpm',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
           SizedBox(height: 10.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -117,7 +116,7 @@ class _MetronomeState extends State<Metronome> {
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
             ),
-	    child: Text(isPlaying ? 'Stop' : 'Start'),
+            child: Text(isPlaying ? 'Stop' : 'Start'),
           ),
         ],
       ),
